@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* App container styling */
+#app {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* Heading styles */
+h1 {
+    font-family: 'Playfair Display', serif;
+    color: #8B0000; /* Dark Red Color */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Animation for item appearance */
+.inventory-item, .log-item {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button styling */
+.btn {
+    border-radius: 8px;
+}
+
+/* Modal size controls */
+#modal-size-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#modal-size-controls div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#modal-size-controls button {
+    font-size: 1.1em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #app {
+        padding: 10px;
+    }
+
+    .modal-dialog {
+        max-width: 90%;
+    }
+}
+
+
+
+
