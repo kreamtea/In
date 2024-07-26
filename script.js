@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyBhyXPdA9Y3K-CKK0l-eeqQC_YolkQ3_jc",
+        authDomain: "inventoryapp-a952a.firebaseapp.com",
+        projectId: "inventoryapp-a952a",
+        storageBucket: "inventoryapp-a952a.appspot.com",
+        messagingSenderId: "233017121903",
+        appId: "1:233017121903:web:3ec1d8f114f26843f3c19a",
+        measurementId: "G-ZD17MYR9KE"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+
     const itemForm = document.getElementById('item-form');
     const inventoryList = document.getElementById('inventory-list');
     const logList = document.getElementById('log-list');
@@ -9,10 +24,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sizes = ['S', 'M', 'L', 'XL'];
     let currentEditItem = null;
-    let inventoryData = JSON.parse(localStorage.getItem('inventoryData')) || [];
+    let inventoryData = [];
 
-    function saveInventoryData() {
-        localStorage.setItem('inventoryData', JSON.stringify(inventoryData));
+    function saveInventoryData(itemData) {
+        db.collection("inventoryData").doc(itemData.name).set(itemData)
+        .then(() => {
+            console.log("Document successfully written!");
+        })
+        .catch((error) => {
+            console.error("Error writing document: ", error);
+        });
+    }
+
+    function loadInventoryData() {
+        db.collection("inventoryData").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                addItemToInventory(doc.data());
+                inventoryData.push(doc.data());
+            });
+        });
     }
 
     itemForm.addEventListener('submit', (e) => {
@@ -28,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sizes: { S: 0, M: 0, L: 0, XL: 0 }
                 };
                 inventoryData.push(itemData);
-                saveInventoryData();
+                saveInventoryData(itemData); // Save to Firestore
                 addItemToInventory(itemData);
                 itemForm.reset();
             };
@@ -103,9 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         logItem.querySelector('.delete-btn').addEventListener('click', () => {
             if (confirm('Are you sure you want to delete this item?')) {
-                inventoryData = inventoryData.filter(item => item.name !== itemData.name);
-                saveInventoryData();
-                logList.removeChild(logItem);
+                db.collection("inventoryData").doc(itemData.name).delete().then(() => {
+                    console.log("Document successfully deleted!");
+                    inventoryData = inventoryData.filter(item => item.name !== itemData.name);
+                    logList.removeChild(logItem);
+                }).catch((error) => {
+                    console.error("Error removing document: ", error);
+                });
             }
         });
     }
@@ -119,10 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn btn-primary size-btn" data-size="${size}" data-action="increase">+</button>
             </div>
         `).join('');
-        editModal.show();
-        
-        modalSizeControls.querySelectorAll('.size-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+
+        Array.from(modalSizeControls.getElementsByClassName('size-btn')).forEach(button => {
+            button.addEventListener('click', (e) => {
                 const size = e.target.dataset.size;
                 const action = e.target.dataset.action;
                 if (action === 'increase') {
@@ -133,6 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.parentElement.querySelector('span').textContent = itemData.sizes[size];
             });
         });
+
+        editModal.show();
     }
 
     saveChangesButton.addEventListener('click', () => {
@@ -148,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `).join('');
                 }
             });
-            saveInventoryData();
+            saveInventoryData(currentEditItem); // Save updated data to Firestore
         }
         editModal.hide();
         currentEditItem = null;
@@ -159,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentEditItem = null;
     });
 
-    // Load existing inventory data
-    inventoryData.forEach(addItemToInventory);
+    // Load inventory data from Firestore
+    loadInventoryData();
 });
 
 
