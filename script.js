@@ -38,9 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadInventoryData() {
         db.collection("inventoryData").get().then((querySnapshot) => {
+            inventoryData = []; // Clear current inventory data
             querySnapshot.forEach((doc) => {
-                addItemToInventory(doc.data());
-                inventoryData.push(doc.data());
+                let itemData = doc.data();
+                inventoryData.push(itemData);
+                addItemToInventory(itemData);
             });
         });
     }
@@ -101,12 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.parentElement.querySelector('span').textContent = itemData.sizes[size];
                 e.target.closest('.inventory-item').querySelector('.total-count').textContent = `Total: ${Object.values(itemData.sizes).reduce((a, b) => a + b, 0)}`;
             } else if (e.target.classList.contains('save-btn')) {
-                saveItem(itemData, itemDiv);
+                saveInventoryData(itemData); // Save changes to Firestore
+                moveItemToLog(itemData, itemDiv);
             }
         });
     }
 
-    function saveItem(itemData, itemDiv) {
+    function moveItemToLog(itemData, itemDiv) {
         const logItem = document.createElement('div');
         logItem.classList.add('log-item', 'p-3', 'mb-3', 'bg-light', 'border', 'rounded', 'animate__animated', 'animate__fadeIn');
         logItem.innerHTML = `
@@ -194,8 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentEditItem = null;
     });
 
-    // Load inventory data from Firestore
-    loadInventoryData();
+    loadInventoryData(); // Load inventory data when the page loads
 });
 
 
