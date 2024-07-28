@@ -22,9 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveChangesButton = document.getElementById('save-changes');
     const cancelEditButton = document.getElementById('cancel-edit');
 
-    const sizes = ['S', 'M', 'L', 'XL'];
+    const sizes = ['XS', 'S', 'M', 'L', 'XL'];
     let currentEditItem = null;
     let inventoryData = [];
+
+    function ensureSizeFields(itemData) {
+        sizes.forEach(size => {
+            if (!itemData.sizes.hasOwnProperty(size)) {
+                itemData.sizes[size] = 0;
+            }
+        });
+    }
 
     function saveInventoryData(itemData) {
         db.collection("inventoryData").doc(itemData.name).set(itemData)
@@ -41,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inventoryData = []; // Clear current inventory data
             querySnapshot.forEach((doc) => {
                 let itemData = doc.data();
+                ensureSizeFields(itemData); // Ensure all size fields are initialized
                 inventoryData.push(itemData);
                 addItemToInventory(itemData);
             });
@@ -57,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemData = {
                     name: itemName,
                     image: event.target.result,
-                    sizes: { S: 0, M: 0, L: 0, XL: 0 }
+                    sizes: { XS: 0, S: 0, M: 0, L: 0, XL: 0 }
                 };
                 inventoryData.push(itemData);
                 saveInventoryData(itemData); // Save to Firestore
@@ -197,8 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentEditItem = null;
     });
 
-    loadInventoryData(); // Load inventory data when the page loads
+    loadInventoryData(); // Load initial inventory data from Firestore
 });
+
 
 
 
